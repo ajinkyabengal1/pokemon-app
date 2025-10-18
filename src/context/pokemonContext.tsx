@@ -5,13 +5,12 @@ import useLocalStorage from '../hooks/useLocalStorage';
 import { BASE_URL, TYPE_URL, LIST_LIMIT } from "../utils/constant";
 
 /* -------------- Types -------------- */
-export interface PokemonSummary {
-  name: string;
-  url: string;
+export type PokemonSummary = {
   id: string;
-  onSelect?: (id: string, isSelected: boolean) => void;
+  name: string;
   isSelected?: boolean;
-}
+  onSelect?: (id: string, checked: boolean) => void;
+};
 
 export interface PokemonDetail extends PokemonSummary {
   imageUrl: string;
@@ -272,7 +271,7 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return <PokemonContext.Provider value={ctxValue}>{children}</PokemonContext.Provider>;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const usePokemonContext = () => {
   const ctx = React.useContext(PokemonContext);
   if (!ctx) throw new Error('usePokemonContext must be used inside Provider');

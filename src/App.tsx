@@ -1,21 +1,21 @@
+import React from 'react';
+import ControlPanel from './components/controls/ControlPanel';
+import PokemonListView from './components/List/PokemonListView';
+import FavoritesView from './components/Favorites/FavoritesView';
+import PokemonDetailModal from './components/Detail/PokemonDetailModal';
+import { usePokemonContext } from './context/PokemonContext';
 
-import './App.css'
-import ControlPanel from './components/controls/ControlPanel'
-
-
-
-function App() {
-
-
+const App: React.FC = () => {
+  const { activeView } = usePokemonContext();
   return (
-    <>
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Pokemon </h1>
-      <p className="text-center text-gray-600">Welcome to the Pokemon Universe! Start your adventure by searching for your favorite Pokémon.</p>
+    <div className="p-4 mx-auto sm:p-8 max-w-7xl">
+      <h1 className="mb-4 text-4xl font-bold text-center text-gray-600">Pokemon App </h1>
+      <p className="mb-2 text-center text-gray-600">Welcome to the Pokemon Universe!</p>
+      <ControlPanel />
+      {activeView === 'list' ? <PokemonListView /> : <FavoritesView />}
+      <PokemonDetailModal />
     </div>
-   <ControlPanel />
-    </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

@@ -1,1 +1,15 @@
 @import "tailwindcss";
+@tailwind utilities;
+
+@layer base {
+  
+  body {
+    @apply min-h-screen bg-fixed bg-gradient-to-br from-yellow-300 via-red-500 to-indigo-700;
+    color: #0f172a;
+  }
+
+  
+  #root, #root > div {
+    background: transparent;
+  }
+}
