@@ -16,7 +16,7 @@ A React + TypeScript app to browse Pokémon with filtering, sorting, favorites, 
 - Vite
 
 ## 🏃‍♂️ Run Locally
-- git clone https://github.com/YOUR_USERNAME/pokemon-app.git
+- git clone https://github.com/ajinkyabengal1/pokemon-app.git
 - cd pokemon-app
 - npm install
  -npm run dev
