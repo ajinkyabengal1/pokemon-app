@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* small global */
+body { @apply bg-red-950 min-h-screen; }
