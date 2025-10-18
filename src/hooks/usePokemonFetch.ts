@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { TYPE_URL } from "../utils/constants";
+import { TYPE_URL } from "../utils/constant";
 import type { PokemonSummary } from "../context/PokemonContext";
 import type { ListState, ListAction } from "../context/PokemonContext";
 
@@ -39,7 +39,7 @@ export default function usePokemonFetcher() {
 
         let results: PokemonSummary[] = [];
         let next: string | null = data.next || null;
-        let count = data.count || (data.pokemon ? data.pokemon.length : 0);
+        const count = data.count || (data.pokemon ? data.pokemon.length : 0);
 
         if (url.includes(TYPE_URL) && data.pokemon) {
           results = data.pokemon.map((p: any) => ({

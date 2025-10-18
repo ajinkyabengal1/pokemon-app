@@ -50,11 +50,16 @@ const initialListState: ListState = {
 };
 
 function listReducer(state: ListState, action: ListAction): ListState {
+  console.log(' Action:', action.type, action);
+
   switch (action.type) {
     case 'FETCH_START':
+      console.log(' -> FETCH_START');
       return { ...state, isLoading: true, error: null };
+
     case 'FETCH_SUCCESS': {
       const { results, next, count, pageUrl } = action.payload;
+      console.log(' -> FETCH_SUCCESS:', { resultsCount: results.length, next, count, pageUrl });
       const isFirstPageOrFilter = pageUrl.includes('offset=0') || pageUrl.includes('type');
       const newData = isFirstPageOrFilter ? results : [...state.data, ...results];
       return {
@@ -67,11 +72,17 @@ function listReducer(state: ListState, action: ListAction): ListState {
         cache: { ...state.cache, [pageUrl]: { results, next, count } },
       };
     }
+
     case 'FETCH_ERROR':
+      console.error(' -> FETCH_ERROR:', action.payload);
       return { ...state, isLoading: false, error: action.payload };
+
     case 'RESET_LIST':
+      console.log(' -> RESET_LIST');
       return { ...initialListState, cache: {} };
+
     default:
+      console.log(' -> UNKNOWN ACTION:', action);
       return state;
   }
 }
@@ -123,20 +134,31 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // fetch types once
   useEffect(() => {
+    console.log(' Fetching Pokemon types...');
     (async () => {
       try {
         const res = await fetch(TYPE_URL);
         const data = await res.json();
-        setTypes(data.results.map((t: any) => t.name));
+        const typeNames = data.results.map((t: any) => t.name);
+        console.log(' Types fetched:', typeNames);
+        setTypes(typeNames);
       } catch (err) {
-        console.error('Failed to load types', err);
+        console.error(' Failed to load types', err);
       }
     })();
   }, []);
 
   const fetchNextPage = useCallback((urlOverride: string | null = null) => {
     const url = urlOverride || listState.nextUrl;
-    if (!url || listState.isLoading) return;
+    console.log(' Called with URL:', url);
+    if (!url) {
+      console.warn(' No URL found — skipping fetch');
+      return;
+    }
+    if (listState.isLoading) {
+      console.warn(' Already loading — skipping');
+      return;
+    }
     fetchData({ url, cache: listState.cache, dispatch });
   }, [listState.nextUrl, listState.isLoading, listState.cache, fetchData]);
 
@@ -144,6 +166,7 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     const url = filterType ? `${TYPE_URL}/${filterType}` : `${BASE_URL}?limit=${LIST_LIMIT}&offset=0`;
     if (!listState.isLoading) {
+      console.log(' Resetting list and fetching for filter:', filterType);
       dispatch({ type: 'RESET_LIST' });
       fetchNextPage(url);
     }
@@ -156,6 +179,7 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const res = await fetch(pokemon.url);
       if (!res.ok) throw new Error('Failed to fetch detail');
       const data = await res.json();
+      console.log(' Data fetched:', data);
       const detail: PokemonDetail = {
         ...pokemon,
         ...data,
@@ -166,22 +190,31 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
       };
       setDetailPokemon(detail);
     } catch (err: any) {
+      console.error(' Error:', err.message);
       setDetailError(err.message || 'Detail fetch error');
     } finally {
       setIsDetailLoading(false);
+      console.log(' Done.');
     }
   }, []);
 
   const toggleFavorite = useCallback((pokemon: PokemonSummary) => {
+    console.log(' Toggling favorite for:', pokemon.name);
     setFavoritesMap(prev => {
       const newFavs = { ...prev };
-      if (newFavs[pokemon.id]) delete newFavs[pokemon.id];
-      else newFavs[pokemon.id] = { name: pokemon.name, url: pokemon.url, id: pokemon.id };
+      if (newFavs[pokemon.id]) {
+        console.log(' Removing from favorites:', pokemon.id);
+        delete newFavs[pokemon.id];
+      } else {
+        console.log(' Adding to favorites:', pokemon.id);
+        newFavs[pokemon.id] = { name: pokemon.name, url: pokemon.url, id: pokemon.id };
+      }
       return newFavs;
     });
   }, [setFavoritesMap]);
 
   const bulkRemoveFavorites = useCallback((ids: string[]) => {
+    console.log(' Removing multiple favorites:', ids);
     setFavoritesMap(prev => {
       const next = { ...prev };
       ids.forEach(id => delete next[id]);
@@ -195,6 +228,7 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (debouncedSearchTerm) {
       const q = debouncedSearchTerm.toLowerCase();
       list = list.filter(p => p.name.toLowerCase().includes(q));
+      console.log(`Filtered list by search result: "${q}" -> ${list.length}`);
     }
 
     list.sort((a, b) => {
@@ -205,6 +239,7 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return 0;
     });
 
+    console.log('Sorted list by', sortKey, sortOrder);
     return list;
   }, [listState.data, debouncedSearchTerm, sortKey, sortOrder]);
 
@@ -225,6 +260,15 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
     activeView, setActiveView,
   };
 
+  console.log(' Context value ready:', {
+    dataCount: listState.data.length,
+    typesCount: types.length,
+    favoritesCount: Object.keys(favoritesMap).length,
+    filterType,
+    sortKey,
+    sortOrder
+  });
+
   return <PokemonContext.Provider value={ctxValue}>{children}</PokemonContext.Provider>;
 };
 
@@ -232,5 +276,6 @@ export const PokemonProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const usePokemonContext = () => {
   const ctx = React.useContext(PokemonContext);
   if (!ctx) throw new Error('usePokemonContext must be used inside Provider');
+  console.log("Hook used successfully");
   return ctx;
 };
